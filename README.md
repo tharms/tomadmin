@@ -5,6 +5,7 @@ Depends on [spring-boot-legacy](https://github.com/scratches/spring-boot-legacy)
 $ git clone https://github.com/tharms/tomadmin.git
 $ cd tomadmin 
 $ mvn gae:run # running it locally on port 8080
+# update appengine-web.xml with application information from google
 $ mvn gae:deploy # deploy to google app engine
 ```
 
