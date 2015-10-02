@@ -3,7 +3,8 @@ Depends on [spring-boot-legacy](https://github.com/scratches/spring-boot-legacy)
 
 ```
 $ git clone https://github.com/tharms/tomadmin.git
-$ (cd tomadmin; mvn gae:deploy)
+$ cd tomadmin 
+$ mvn gae:run # running it locally on port 8080
+$ mvn gae:deploy # deploy to google app engine
 ```
 
-Also runs as a deployed WAR in WTP or regular Tomcat container. The `main()` app (normal Spring Boot launcher) should also work.
