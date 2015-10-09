@@ -6,19 +6,19 @@ import java.util.HashSet;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
-import demo.user.GaeUser;
+import demo.user.ToolUser;
 
 /**
  * Authentication object representing a fully-authenticated user.
  *
  * @author  Luke Taylor
  */
-public class GaeUserAuthentication implements Authentication {
-    private final GaeUser principal;
+public class ToolUserAuthentication implements Authentication {
+    private final ToolUser principal;
     private final Object details;
     private boolean authenticated;
 
-    public GaeUserAuthentication(final GaeUser principal, final Object details) {
+    public ToolUserAuthentication(final ToolUser principal, final Object details) {
         this.principal = principal;
         this.details = details;
         authenticated = true;

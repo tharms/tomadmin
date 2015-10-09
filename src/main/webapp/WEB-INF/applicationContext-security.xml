@@ -22,7 +22,7 @@
 
 	<b:bean id="gaeEntryPoint" class="demo.config.security.GoogleAccountsAuthenticationEntryPoint" />
 
-	<b:bean id="gaeFilter" class="demo.config.security.GaeAuthenticationFilter">
+	<b:bean id="gaeFilter" class="demo.config.security.ToolAuthenticationFilter">
 		<b:property name="authenticationManager" ref="authenticationManager"/>
 		<b:property name="failureHandler">
 			<b:bean class="org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler">

@@ -13,8 +13,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import com.google.appengine.api.users.User;
 
-import demo.user.GaeUser;
-import demo.user.UserRegistry;
+import demo.user.ToolUser;
 
 /**
  * A simple authentication provider which interacts with {@code User} returned by the GAE {@code UserService}, and also
@@ -31,24 +30,16 @@ import demo.user.UserRegistry;
 public class GoogleAccountsAuthenticationProvider implements AuthenticationProvider, MessageSourceAware {
     protected MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-    private UserRegistry userRegistry;
-
     public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
         User googleUser = (User) authentication.getPrincipal();
 
-        GaeUser user = userRegistry.findUser(googleUser.getUserId());
-
-        if (user == null) {
-
-            // User not in registry. Needs to register
-            user = new GaeUser(googleUser.getUserId(), googleUser.getNickname(), googleUser.getEmail());
-        }
+        ToolUser user = new ToolUser(googleUser.getUserId(), googleUser.getNickname(), googleUser.getEmail());
 
         if (!user.isEnabled()) {
             throw new DisabledException("Account is disabled");
         }
 
-        return new GaeUserAuthentication(user, authentication.getDetails());
+        return new ToolUserAuthentication(user, authentication.getDetails());
     }
 
     /**
@@ -56,10 +47,6 @@ public class GoogleAccountsAuthenticationProvider implements AuthenticationProvi
      */
     public final boolean supports(final Class<?> authentication) {
         return PreAuthenticatedAuthenticationToken.class.isAssignableFrom(authentication);
-    }
-
-    public void setUserRegistry(final UserRegistry userRegistry) {
-        this.userRegistry = userRegistry;
     }
 
     public void setMessageSource(final MessageSource messageSource) {

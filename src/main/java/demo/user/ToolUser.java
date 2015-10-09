@@ -13,7 +13,7 @@ import demo.config.security.AppRole;
  *
  * @author  Luke Taylor
  */
-public class GaeUser implements Serializable {
+public class ToolUser implements Serializable {
     private final String userId;
     private final String email;
     private final String nickname;
@@ -25,10 +25,10 @@ public class GaeUser implements Serializable {
     /**
      * Pre-registration constructor. Assigns the user the "NEW_USER" role only.
      */
-    public GaeUser(final String userId, final String nickname, final String email) {
+    public ToolUser(final String userId, final String nickname, final String email) {
         this.userId = userId;
         this.nickname = nickname;
-        this.authorities = EnumSet.of(AppRole.NEW_USER);
+        this.authorities = EnumSet.of(AppRole.USER);
         this.forename = null;
         this.surname = null;
         this.email = email;
@@ -38,7 +38,7 @@ public class GaeUser implements Serializable {
     /**
      * Post-registration constructor.
      */
-    public GaeUser(final String userId, final String nickname, final String email, final String forename,
+    public ToolUser(final String userId, final String nickname, final String email, final String forename,
             final String surname, final Set<AppRole> authorities, final boolean enabled) {
         this.userId = userId;
         this.nickname = nickname;

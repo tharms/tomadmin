@@ -30,14 +30,12 @@ import org.springframework.web.filter.GenericFilterBean;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 
-import demo.user.GaeUser;
+import demo.user.ToolUser;
 
 /**
- * @author  Luke Taylor
+ * @author  Tobias Harms
  */
-public class GaeAuthenticationFilter extends GenericFilterBean {
-    private static final String REGISTRATION_URL = "/register.htm";
-
+public class ToolAuthenticationFilter extends GenericFilterBean {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final AuthenticationDetailsSource<HttpServletRequest, WebAuthenticationDetails> ads =
@@ -75,13 +73,6 @@ public class GaeAuthenticationFilter extends GenericFilterBean {
                     authentication = authenticationManager.authenticate(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    if (authentication.getAuthorities().contains(AppRole.NEW_USER)) {
-                        logger.debug("New user authenticated. Redirecting to registration page");
-                        ((HttpServletResponse) response).sendRedirect(REGISTRATION_URL);
-
-                        return;
-                    }
-
                 } catch (AuthenticationException e) {
                     failureHandler.onAuthenticationFailure((HttpServletRequest) request, (HttpServletResponse)
                         response, e);
@@ -103,9 +94,9 @@ public class GaeAuthenticationFilter extends GenericFilterBean {
             return false;
         }
 
-        GaeUser gaeUser = (GaeUser) authentication.getPrincipal();
+        ToolUser toolUser = (ToolUser) authentication.getPrincipal();
 
-        if (!gaeUser.getEmail().equals(googleUser.getEmail())) {
+        if (!toolUser.getEmail().equals(googleUser.getEmail())) {
             return false;
         }
 

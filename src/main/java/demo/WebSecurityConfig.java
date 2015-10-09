@@ -20,10 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
-import demo.config.security.GaeAuthenticationFilter;
 import demo.config.security.GoogleAccountsAuthenticationProvider;
-
-import demo.user.GaeDatastoreUserRegistry;
+import demo.config.security.ToolAuthenticationFilter;
 
 @Configuration
 @EnableWebMvcSecurity
@@ -47,14 +45,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             logger.error(e.getMessage());
         }
 
-        http.authorizeRequests().antMatchers("/", "/info", "/version", "/_ah/warmup").permitAll().anyRequest()
-            .authenticated().and().formLogin().loginPage(loginUrl).permitAll().and().logout().permitAll().and()
-            .addFilterAfter(gaeAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.authorizeRequests().antMatchers("/", "/info", "/version", "/_ah/**").permitAll().anyRequest()
+            .authenticated().and().formLogin().loginPage(loginUrl).permitAll().and().logout().permitAll().and().csrf()
+            .disable().addFilterAfter(gaeAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
-    public GaeAuthenticationFilter gaeAuthenticationFilter() throws Exception {
-        GaeAuthenticationFilter gaeAuthenticationFilter = new GaeAuthenticationFilter();
+    public ToolAuthenticationFilter gaeAuthenticationFilter() throws Exception {
+        ToolAuthenticationFilter gaeAuthenticationFilter = new ToolAuthenticationFilter();
         gaeAuthenticationFilter.setAuthenticationManager(authenticationManagerBean());
         return gaeAuthenticationFilter;
     }
@@ -72,7 +70,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public GoogleAccountsAuthenticationProvider customAuthenticationProvider() {
         GoogleAccountsAuthenticationProvider customAuthenticationProvider = new GoogleAccountsAuthenticationProvider();
-        customAuthenticationProvider.setUserRegistry(new GaeDatastoreUserRegistry());
         return customAuthenticationProvider;
     }
 

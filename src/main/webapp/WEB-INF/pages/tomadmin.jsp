@@ -11,6 +11,7 @@
     <title></title>
 </head>
 <body>
+<p><a href="${logout}">Logout</a> </p>
 <h1>${message}</h1>
 </body>
 </html>
