@@ -2,10 +2,6 @@ package demo.persistence;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import static org.mockito.Matchers.any;
-
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 
 import org.hamcrest.Description;
@@ -14,10 +10,16 @@ import org.hamcrest.TypeSafeMatcher;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import org.mockito.Mockito;
+import org.junit.runner.RunWith;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.google.api.client.util.Lists;
 
@@ -29,8 +31,14 @@ import com.google.gdata.data.spreadsheet.ListEntry;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 
+import demo.Application;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = Application.class)
+@WebAppConfiguration
 public class GoalRepositoryTest {
 
+    @Autowired
     private GoalRepository goalRepository;
 
     private static final LocalServiceTestHelper helper = new LocalServiceTestHelper(
@@ -48,9 +56,9 @@ public class GoalRepositoryTest {
         goals.add(goal1);
         goals.add(goal2);
         goals.add(goal3);
-        goalRepository = Mockito.mock(GoalRepository.class);
+        // goalRepository = Mockito.mock(GoalRepository.class);
 
-        when(goalRepository.getNewGoals(any(List.class))).thenReturn(goals);
+        // when(goalRepository.getNewGoals(any(List.class))).thenReturn(goals);
 
         ObjectifyService.register(GoalGroup.class);
         ObjectifyService.register(Goal.class);
@@ -62,15 +70,20 @@ public class GoalRepositoryTest {
     }
 
     @Test
-    @Ignore
     public void testUpdate() throws Exception {
         Objectify ofy = ObjectifyService.factory().begin();
 
         final List<ListEntry> listEntries = Lists.newArrayList();
         final ListEntry listEntry1 = new ListEntry("1", "1.0");
         listEntry1.getCustomElements().setValueLocal("status", "INITIATION");
+        listEntry1.getCustomElements().setValueLocal("id", "1");
+        listEntry1.getCustomElements().setValueLocal("internalempid", "BA87");
 
         final ListEntry listEntry2 = new ListEntry("2", "1.0");
+        listEntry1.getCustomElements().setValueLocal("status", "EXECUTION");
+        listEntry2.getCustomElements().setValueLocal("id", "2");
+        listEntry2.getCustomElements().setValueLocal("internalempid", "DO1");
+
         listEntries.add(listEntry1);
         listEntries.add(listEntry2);
         goalRepository.update(listEntries);
@@ -88,7 +101,25 @@ public class GoalRepositoryTest {
 
             @Override
             protected boolean matchesSafely(final List<Goal> goals) {
-                return goals.equals(listEntries);
+                for (ListEntry listEntry : listEntries) {
+                    final Long goalId = Long.parseLong(listEntry.getCustomElements().getValue("id"));
+                    final String employeeId = listEntry.getCustomElements().getValue("internalempid");
+                    final Status status = Status.parse(listEntry.getCustomElements().getValue("status"));
+
+                    boolean found = false;
+                    for (Goal goal : goals) {
+                        if (goal.employeeId.equals(employeeId) && goal.id.equals(goalId)
+                                && goal.status.equals(status)) {
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         };
 

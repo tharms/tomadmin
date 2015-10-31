@@ -2,6 +2,8 @@ package demo.persistence;
 
 import java.util.Date;
 
+import com.google.api.client.util.Preconditions;
+
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -36,6 +38,9 @@ public class Goal {
     public Goal(final Long goalId, final String peopleLead, final String goalName, final String employeeId,
             final Status status, final Integer externalClusterId) {
         this();
+        Preconditions.checkNotNull(employeeId);
+        Preconditions.checkNotNull(goalId);
+
         this.goalGroup = Key.create(GoalGroup.class, "default");
 
         this.id = goalId;

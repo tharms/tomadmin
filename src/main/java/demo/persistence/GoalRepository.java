@@ -69,7 +69,7 @@ public class GoalRepository {
 
             final Status status = Status.parse(listEntry.getCustomElements().getValue("status"));
 
-            if (goalId != null) {
+            if (employeeId != null && goalId != null) {
                 newGoals.add(new Goal(goalId, peopleLead, goal, employeeId, status, goalClusterId));
             }
         }
