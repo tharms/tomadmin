@@ -3,4 +3,5 @@
 .settings/
 .springBeans
 .idea
+src/main/resources/ClientSecret.json
 target
