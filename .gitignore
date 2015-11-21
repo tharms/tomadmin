@@ -5,3 +5,7 @@
 .idea
 src/main/resources/ClientSecret.json
 target
+.DS_Store
+src/.DS_Store
+src/main/.DS_Store
+src/test/java/demo/feedback/Export.csv
