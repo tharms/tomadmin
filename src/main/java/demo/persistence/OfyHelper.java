@@ -20,9 +20,6 @@ public class OfyHelper implements ServletContextListener {
         ObjectifyService.register(GoalGroup.class);
         ObjectifyService.register(Goal.class);
         ObjectifyService.register(FeedbackGroup.class);
-        ObjectifyService.register(Feedback.class);
-        ObjectifyService.register(FeedbackSource.class);
-        ObjectifyService.register(FeedbackElement.class);
         ObjectifyService.register(Row.class);
     }
 

@@ -1,0 +1,43 @@
+"Receiver
+Provider
+Type
+Status
+Calc_AVG
+Calc_MIN
+Calc_MAX
+Solution orientedness
+Solution orientedness (comment)
+Right strategic decisions
+Right strategic decisions (comment)
+Analytical skills
+Analytical skills (comment)
+Broad view
+Broad view (comment)
+Sets the right priorities
+Sets the right priorities (comment)
+Output quality/speed
+Output quality/speed (comment)
+Ownership
+Ownership (comment)
+Implementation / Following through
+Implementation / Following through (c)
+Emotional stability
+Emotional stability (comment)
+Embraces change
+Embraces change (comment)
+Self improvement
+Self improvement (comment)
+Connects people
+Connects people (comment)
+Has a true team focus
+Has a true team focus (comment)
+Shares knowledge
+Shares knowledge (comment)
+Provides good feedback
+Provides good feedback (comment)
+Improves team athmosphere
+Improves team athmosphere (comment)
+Is a source of inspiration
+Is a source of inspiration (comment)
+Constant challenger
+Constant challenger (comment)"

@@ -1,11 +1,6 @@
 package demo.feedback;
 
-import com.google.api.client.util.Lists;
-import com.google.gdata.data.spreadsheet.ListEntry;
 import com.googlecode.objectify.ObjectifyService;
-import demo.persistence.ClusterRepository;
-import demo.persistence.Goal;
-import demo.persistence.Status;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,31 +14,42 @@ public class FeedbackRepository {
 
     private static Logger logger = Logger.getLogger(FeedbackRepository.class.getName());
 
-    public void update(final List<Feedback> feedbacks) {
+    public void add(final List<Row> feedback) {
 
-        final List<Feedback> oldFeedback = getPersistedFeedbacks();
-
-        final List<Feedback> toUpdate = Lists.newArrayList(oldFeedback);
-        toUpdate.retainAll(feedbacks);
-
-        final List<Feedback> toDelete = Lists.newArrayList(oldFeedback);
-        toDelete.remove(feedbacks);
-
-        final List<Feedback> toInsert = Lists.newArrayList(feedbacks);
-        toInsert.removeAll(oldFeedback);
-
-        for (Feedback f : toDelete) {
-            ObjectifyService.ofy().delete().entity(f).now();
+        for (Row row : feedback) {
+            ObjectifyService.ofy().save().entity(row).now();
         }
+    }
 
-        ObjectifyService.ofy().save().entities(toUpdate).now();
+    public void removeFeedbackOfUser(String userId) {
+        final List<Row> oldFeedback = getPersistedFeedbacksOfUser(userId);
 
-        ObjectifyService.ofy().save().entities(toInsert).now();
+        for (Row row : oldFeedback) {
+            ObjectifyService.ofy().delete().entity(row).now();
+        }
     }
 
 
-    public List<Feedback> getPersistedFeedbacks() {
-        return ObjectifyService.ofy().load().type(Feedback.class).list();
+    public List<Row> getPersistedFeedbacksOfUser(String user) {
+        return ObjectifyService.ofy().load().type(Row.class).filter("userId", user).list();
     }
 
+    public List<Row> getPersistedFeedbacksOfReceiver(String user, String receiver) {
+        return ObjectifyService.ofy().load().type(Row.class).filter("userId", user).filter("receiver", receiver).list();
+    }
+
+    public List<Row> getFeedbackForSampleRow(String user, Long sampleRow) {
+        final List<Row> persistedFeedbacksOfLead = getPersistedFeedbacksOfUser(user);
+        String receiver = null;
+        for (Row row : persistedFeedbacksOfLead) {
+            if (row.getId().equals(sampleRow)) {
+                receiver = row.getReceiver();
+                break;
+            }
+        }
+        if (receiver == null) {
+            throw new IllegalArgumentException("No feedback receiver found for rowId: " + sampleRow);
+        }
+        return getPersistedFeedbacksOfReceiver(user, receiver);
+    }
 }

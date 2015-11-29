@@ -2,8 +2,6 @@ package demo.feedback;
 
 
 import com.google.api.client.util.Lists;
-
-import java.util.IllegalFormatException;
 import java.util.List;
 
 /**
@@ -11,53 +9,59 @@ import java.util.List;
  */
 public class FeedbackReceiverParser {
     public static final int LINE_ELEMENTS = 43;
-    private final String receiver;
     private final String leadName;
+    private final String user;
 
-    public FeedbackReceiverParser(String receiver, String leadName) {
-        this.receiver = receiver;
+    public FeedbackReceiverParser(String user, String leadName) {
+        this.user = user;
         this.leadName = leadName;
     }
 
-    public Feedback parse(List<String> rawData) {
-        FeedbackSource self = null;
-        FeedbackSource lead = null;
-        FeedbackSource multi;
-        List<Row> multiRows = Lists.newArrayList();
+    public List<Row> parse(List<String> rawData, long idOffset) {
+        List<Row> result = Lists.newArrayList();
 
+        long id = idOffset;
         for (String line : rawData) {
-            String[] split = line.split("\",\"");
+            String[] split = splitAndClean(line);
             if (split.length != LINE_ELEMENTS) {
                 throw new IllegalArgumentException(line);
             }
 
             if (split[3].equalsIgnoreCase("Completed")) {
-                List<FeedbackElement> rowData = Lists.newArrayList();
+                List<Integer> ratings = Lists.newArrayList();
+                List<String> comments = Lists.newArrayList();
+                String receiver = split[0];
+                String giver = split[1];
+                int feedbackType = 0;
+                if (receiver.equals(giver)) {
+                    feedbackType = Row.SELF_FEEDBACK;
+                } else if (giver.equals(leadName)) {
+                    feedbackType = Row.LEAD_FEEDBACK;
+                } else {
+                    feedbackType = Row.MULTI_FEEDBACK;
+                }
 
                 for (int i=7; i<LINE_ELEMENTS; i+=2) {
                     Integer rating = Integer.parseInt(split[i]);
                     String comment = split[i+1];
-                    FeedbackElement feedbackElement = new FeedbackElement(rating, comment);
-                    rowData.add(feedbackElement);
+                    ratings.add(rating);
+                    comments.add(comment);
                 }
-
-
-                if(split[1].trim().equalsIgnoreCase(receiver)) {
-                    List<Row> rows = Lists.newArrayList();
-                    rows.add(new Row(rowData));
-                    self = new FeedbackSource(rows);
-                } else if (split[1].trim().equalsIgnoreCase(leadName)) {
-                    List<Row> rows = Lists.newArrayList();
-                    rows.add(new Row(rowData));
-                    lead = new FeedbackSource(rows);
-                } else {
-                    multiRows.add(new Row(rowData));
-                }
+                result.add(new Row(id++, user, receiver, giver, leadName, ratings, comments, feedbackType));
             }
         }
-
-        multi = new FeedbackSource(multiRows);
-
-        return new Feedback(receiver, leadName, self, lead, multi);
+        return result;
     }
+
+    private String[] splitAndClean(String line) {
+        String[] splits = line.split("\\\",");
+        for (int i=0; i<splits.length; i++) {
+            splits[i] = splits[i].replace("\\\"","").replace("\\","");
+            if (splits[i].startsWith("\"")) {
+                splits[i] = splits[i].substring(1);
+            }
+        }
+        return splits;
+    }
+
 }

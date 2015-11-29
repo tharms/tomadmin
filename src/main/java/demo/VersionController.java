@@ -1,5 +1,6 @@
 package demo;
 
+import com.google.api.client.util.Lists;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,6 +12,6 @@ public class VersionController {
 
     @RequestMapping("/version")
     public String getVersion() {
-        return "1.0";
+        return "v1.0";
     }
 }

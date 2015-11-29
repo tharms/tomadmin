@@ -1,6 +1,11 @@
 package demo.feedback;
 
 import com.google.api.client.util.Lists;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.googlecode.objectify.ObjectifyService;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
@@ -14,24 +19,36 @@ import static org.junit.Assert.*;
  */
 public class FeedbackTest {
 
+    private static final LocalServiceTestHelper helper = new LocalServiceTestHelper(
+            new LocalDatastoreServiceTestConfig());
+
+    @Before
+    public void setUp() {
+        helper.setUp();
+
+        ObjectifyService.register(FeedbackGroup.class);
+        ObjectifyService.register(Row.class);
+    }
+
+    @After
+    public void tearDown() {
+        helper.tearDown();
+    }
+
     @Test
     public void parseSimpleData() {
-        final FeedbackReceiverParser feedbackReceiverParser = new FeedbackReceiverParser("Feedback Receiver", "Lead Name");
-        List<String> rawData = readFile("src/test/java/demo/feedback/single.csv");
+        final FeedbackReceiverParser feedbackReceiverParser = new FeedbackReceiverParser("abc", "Lead Name");
+        List<String> rawData = FeedbackTools.readFile("src/test/java/demo/feedback/single.csv");
 
-        Feedback feedback = feedbackReceiverParser.parse(rawData);
+        List<Row> feedback = feedbackReceiverParser.parse(rawData, 1L);
 
-        assertNotNull(feedback);
-        assertNotNull(feedback.getLead());
-        assertNotNull(feedback.getMulti());
-        assertNotNull(feedback.getSelf());
-
+        assert(feedback.size() == 9 );
     }
 
     @Test
     public void parseComplexData() {
         final FeedbackParser feedbackParser = new FeedbackParser();
-        List<String> rawData = readComplexFile("src/test/java/demo/feedback/Export.csv");
+        List<String> rawData = FeedbackTools.readComplexFile("src/test/java/demo/feedback/Export.csv");
 
         Map<String, List<String>> parsed = feedbackParser.parse(rawData);
 
@@ -39,47 +56,5 @@ public class FeedbackTest {
     }
 
 
-    public List<String> readFile(String file) {
-        List<String> rawData = Lists.newArrayList();
-        File f = new File(file);
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(f));
-            String line;
-            while((line = br.readLine()) != null) {
-                if (line.startsWith("\"Feedback Receiver\"")) {
-                    rawData.add(line);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return rawData;
-    }
-
-    public List<String> readComplexFile(String file) {
-        List<String> rawData = Lists.newArrayList();
-        File f = new File(file);
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(f));
-            String line;
-            boolean firstLine = true;
-            while((line = br.readLine()) != null) {
-                if(firstLine) {
-                    firstLine = false;
-                } else {
-                    rawData.add(line);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return rawData;
-    }
 
 }

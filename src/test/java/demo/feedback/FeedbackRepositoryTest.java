@@ -1,19 +1,10 @@
 package demo.feedback;
 
-import com.google.api.client.util.Lists;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.gdata.data.spreadsheet.ListEntry;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import demo.Application;
-import demo.persistence.Goal;
-import demo.persistence.GoalGroup;
-import demo.persistence.GoalRepository;
-import demo.persistence.Status;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -33,7 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class FeedbackRepositoryTest {
 
     @Autowired
-    private GoalRepository goalRepository;
+    private FeedbackRepository feedbackRepository;
 
     private static final LocalServiceTestHelper helper = new LocalServiceTestHelper(
             new LocalDatastoreServiceTestConfig());
@@ -42,20 +34,8 @@ public class FeedbackRepositoryTest {
     public void setUp() {
         helper.setUp();
 
-        Goal goal1 = new Goal(1L, "Steve Jobs", "Make iPhone", "SJ1", Status.EXECUTION, 23);
-        Goal goal2 = new Goal(2L, "Eric Schmidt", "Create google maps", "ES2", Status.EXECUTION, 23);
-        Goal goal3 = new Goal(3L, "Jeff Bezos", "Implement AppDynamics", "JB3", Status.EXECUTION, 23);
-
-        final List<Goal> goals = Lists.newArrayList();
-        goals.add(goal1);
-        goals.add(goal2);
-        goals.add(goal3);
-        // goalRepository = Mockito.mock(GoalRepository.class);
-
-        // when(goalRepository.getNewGoals(any(List.class))).thenReturn(goals);
-
-        ObjectifyService.register(GoalGroup.class);
-        ObjectifyService.register(Goal.class);
+        ObjectifyService.register(FeedbackGroup.class);
+        ObjectifyService.register(Row.class);
     }
 
     @After
@@ -65,61 +45,37 @@ public class FeedbackRepositoryTest {
 
     @Test
     public void testUpdate() throws Exception {
-        Objectify ofy = ObjectifyService.factory().begin();
+        final FeedbackParser feedbackParser = new FeedbackParser();
+        final List<String> rawData = FeedbackTools.readFile("src/test/java/demo/feedback/single.csv");
+        final Map<String, List<String>> parsed = feedbackParser.parse(rawData);
 
-        final List<ListEntry> listEntries = Lists.newArrayList();
-        final ListEntry listEntry1 = new ListEntry("1", "1.0");
-        listEntry1.getCustomElements().setValueLocal("status", "INITIATION");
-        listEntry1.getCustomElements().setValueLocal("id", "1");
-        listEntry1.getCustomElements().setValueLocal("internalempid", "BA87");
+        final Objectify ofy = ObjectifyService.factory().begin();
+        final FeedbackReceiverParser feedbackReceiverParser = new FeedbackReceiverParser("abc", "xx");
 
-        final ListEntry listEntry2 = new ListEntry("2", "1.0");
-        listEntry1.getCustomElements().setValueLocal("status", "EXECUTION");
-        listEntry2.getCustomElements().setValueLocal("id", "2");
-        listEntry2.getCustomElements().setValueLocal("internalempid", "DO1");
+        int size = 0;
+        for (List<String> feedback : parsed.values()) {
+            final List<Row> rows = feedbackReceiverParser.parse(feedback, 1L);
+            size += rows.size();
+            feedbackRepository.add(rows);
+        }
 
-        listEntries.add(listEntry1);
-        listEntries.add(listEntry2);
-        goalRepository.update(listEntries);
-
-        assertThat(goalRepository.getPersistedGoals(), entryMatcher(listEntries));
-    }
-
-    private Matcher<? super List<Goal>> entryMatcher(final List<ListEntry> listEntries) {
-        final Matcher<? super List<Goal>> myMatcher = new TypeSafeMatcher<List<Goal>>() {
-
-            @Override
-            public void describeTo(final Description description) {
-                description.appendValue(listEntries);
-            }
-
-            @Override
-            protected boolean matchesSafely(final List<Goal> goals) {
-                for (ListEntry listEntry : listEntries) {
-                    final Long goalId = Long.parseLong(listEntry.getCustomElements().getValue("id"));
-                    final String employeeId = listEntry.getCustomElements().getValue("internalempid");
-                    final Status status = Status.parse(listEntry.getCustomElements().getValue("status"));
-
-                    boolean found = false;
-                    for (Goal goal : goals) {
-                        if (goal.employeeId.equals(employeeId) && goal.id.equals(goalId)
-                                && goal.status.equals(status)) {
-                            found = true;
-                        }
-                    }
-
-                    if (!found) {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
-        };
-
-        return myMatcher;
+        assert(feedbackRepository.getPersistedFeedbacksOfUser("abc").size() == size && size > 0);
     }
 
     @Test
-    public void testGetAllGoals() throws Exception { }
+    public void testFindBySampleId() {
+        final Objectify ofy = ObjectifyService.factory().begin();
+        final FeedbackParser feedbackParser = new FeedbackParser();
+        final List<String> rawData = FeedbackTools.readFile("src/test/java/demo/feedback/single.csv");
+        final Map<String, List<String>> parsed = feedbackParser.parse(rawData);
+        final FeedbackReceiverParser feedbackReceiverParser = new FeedbackReceiverParser("abc", "xx");
+        for (List<String> feedback : parsed.values()) {
+            final List<Row> rows = feedbackReceiverParser.parse(feedback, 1L);
+            feedbackRepository.add(rows);
+        }
+        final Long xxId = feedbackRepository.getPersistedFeedbacksOfUser("abc").get(0).getId();
+        final List<Row> xx = feedbackRepository.getFeedbackForSampleRow("abc", xxId);
+        assert(xx.size() > 0);
+    }
+
 }

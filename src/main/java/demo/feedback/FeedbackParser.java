@@ -25,9 +25,11 @@ public class FeedbackParser {
 
         boolean brokenLineMerged = true;
         for(String line : rawData) {
-            String[] split = line.split("\",\"");
+            String[] split = splitAndClean(line);
+
             if (split.length == FeedbackReceiverParser.LINE_ELEMENTS) {
-                String receiver = split[0].trim().substring(1);
+                final String receiver = split[0].trim();
+
                 if (repaired.get(receiver) == null) {
                     List<String> receiverFeedback = Lists.newArrayList();
                     receiverFeedback.add(line);
@@ -44,7 +46,7 @@ public class FeedbackParser {
                     String brokenLine = brokenLines.get(brokenLines.size()-1);
                     String newAttempt = brokenLine + "\n" + line;
                     brokenLines.set(brokenLines.size()-1, newAttempt);
-                    String[] newLine = newAttempt.split("\",\"");
+                    String[] newLine = splitAndClean(newAttempt);
                     if (newLine.length >= FeedbackReceiverParser.LINE_ELEMENTS){
                         brokenLineMerged = true;
                     } else {
@@ -67,8 +69,14 @@ public class FeedbackParser {
             }
         }
 
-
-
         return repaired;
+    }
+
+    private String[] splitAndClean(String line) {
+        String[] splits = line.split("\\\",");
+        for (int i=0; i<splits.length; i++) {
+            splits[i] = splits[i].replace("\\\"","").replace("\\","");
+        }
+        return splits;
     }
 }

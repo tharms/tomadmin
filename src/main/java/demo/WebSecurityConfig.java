@@ -45,7 +45,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             logger.error(e.getMessage());
         }
 
-        http.authorizeRequests().antMatchers("/", "/info", "/version", "/_ah/**").permitAll().anyRequest()
+        http.authorizeRequests().antMatchers("/", "/info", "/version" ,"/_ah/**").permitAll().anyRequest()
             .authenticated().and().formLogin().loginPage(loginUrl).permitAll().and().logout().permitAll().and().csrf()
             .disable().addFilterAfter(gaeAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
